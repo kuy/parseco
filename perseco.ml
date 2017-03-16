@@ -7,3 +7,4 @@ let parseHoge target position =
 
 let () =
   assert ((parseHoge "hoge.foo.bar" 0) = (Some "hoge", 4));
+  assert ((parseHoge "foo.bar" 0) = (None, 0));
