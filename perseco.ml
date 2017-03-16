@@ -1,10 +1,13 @@
 open Core.Std
 
-let parseHoge target position =
-  if String.slice target position (position + 4) = "hoge"
-    then (Some "hoge", position + 4)
-    else (None, position)
+let token str target pos =
+  let len = String.length str in
+  if String.slice target pos (pos + len) = str
+    then (Some str, pos + len)
+    else (None, pos)
 
 let () =
-  assert ((parseHoge "hoge.foo.bar" 0) = (Some "hoge", 4));
-  assert ((parseHoge "foo.bar" 0) = (None, 0));
+  let hoge = token "hoge" in
+  assert ((hoge "hoge.foo.bar" 0) = (Some "hoge", 4));
+  assert ((hoge "foo.hoge.bar" 4) = (Some "hoge", 8));
+  assert ((hoge "foo.bar" 0) = (None, 0));
