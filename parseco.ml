@@ -1,16 +1,15 @@
 open Core.Std
 
-let bound n (s, e) =
-  if n < s then s else if e < n then e else n
+let bound i (s, e) =
+  if i < s then s else if e < i then e else i
 
 let sub str start = function
   | 0 -> ""
   | len ->
-    let str_len = String.length str in
-    let range = (0, str_len) in
-    let i_start = bound start range in
-    let i_end = bound (start + len) range in
-    String.slice str i_start i_end
+    let range = (0, String.length str) in
+    let s = bound start range in
+    let e = bound (start + len) range in
+    String.slice str s e
 
 let token str target pos =
   let len = String.length str in
