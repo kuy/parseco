@@ -36,6 +36,18 @@ let choice parsers target pos =
     | None -> (None, pos)
   in loop 0
 
+let seq parsers target pos =
+  let rec aux acc i pos' =
+    match List.nth parsers i with
+    | Some parser ->
+      (
+        match parser target pos' with
+        | (Some r, pos'') -> aux (r :: acc) (i + 1) pos''
+        | (None, _) -> (None, pos)
+      )
+    | None -> (Some (List.rev acc), pos')
+  in aux [] 0 pos
+
 let () =
   assert ((clamp 0 (0, 2)) = 0);
   assert ((clamp 1 (0, 2)) = 1);
@@ -76,3 +88,8 @@ let () =
   let many_of_foo_or_bar = many foo_or_bar in
   assert ((many_of_foo_or_bar "foobarbarfoo" 0) = (Some ["foo"; "bar"; "bar"; "foo"], 12));
   assert ((many_of_foo_or_bar "" 0) = (Some [], 0));
+
+  let hoge_and_foo_or_bar = seq [hoge; foo_or_bar] in
+  assert ((hoge_and_foo_or_bar "hogefoo" 0) = (Some ["hoge"; "foo"], 7));
+  assert ((hoge_and_foo_or_bar "hogebar" 0) = (Some ["hoge"; "bar"], 7));
+  assert ((hoge_and_foo_or_bar "hoge" 0) = (None, 0));
