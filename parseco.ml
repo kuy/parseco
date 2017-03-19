@@ -1,4 +1,5 @@
-open Core.Std
+open! Core.Std
+open Re2.Std
 
 let clamp i (s, e) =
   if i < s then s else if e < i then e else i
@@ -52,6 +53,22 @@ let option parser target pos =
   match parser target pos with
   | (Some r, pos') -> (Some r, pos')
   | (None, pos') -> (Some "", pos')
+
+let find_first' pat str =
+  let pat' = Re2.of_string pat in
+  match Re2.find_first pat' str with
+  | Ok r ->
+    let len = String.length r in
+    if r = sub str 0 len
+      then Some r
+      else None
+  | Error _ -> None
+
+let regex pattern target pos =
+  let target' = sub target pos (String.length target) in
+  match find_first' pattern target' with
+  | Some r -> (Some r, pos + (String.length r))
+  | None -> (None, pos)
 
 let () =
   assert ((clamp 0 (0, 2)) = 0);
@@ -116,3 +133,12 @@ let () =
   assert ((variation "Vim" 0) = (Some [""; "Vim"], 3));
   assert ((variation "MacEmacs" 0) = (None, 0));
   assert ((variation "Emacs" 0) = (None, 0));
+
+  assert ((find_first' "[1-9][0-9]*" "123") = (Some "123"));
+  assert ((find_first' "[1-9][0-9]*" "0123") = None);
+  assert ((find_first' "[1-9][0-9]*" "abc") = None);
+
+  let num = regex "[1-9][0-9]*" in
+  assert ((num "2017" 0) = (Some "2017", 4));
+  assert ((num "9am" 0) = (Some "9", 1));
+  assert ((num "02" 0) = (None, 0));

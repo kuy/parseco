@@ -12,7 +12,7 @@ $ opam install core
 
 ### Build
 
-`corebuild parseco.native`
+`corebuild -pkg re2 parseco.native`
 
 ### Run
 
