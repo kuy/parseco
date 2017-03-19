@@ -15,8 +15,8 @@ let sub str start = function
 let token str target pos =
   let len = String.length str in
   if sub target pos len = str
-    then (Some str, pos + len)
-    else (None, pos)
+  then (Some str, pos + len)
+  else (None, pos)
 
 let many parser target pos =
   let rec aux acc pos =
@@ -60,8 +60,8 @@ let find_first' pat str =
   | Ok r ->
     let len = String.length r in
     if r = sub str 0 len
-      then Some r
-      else None
+    then Some r
+    else None
   | Error _ -> None
 
 let regex pattern target pos =
@@ -69,6 +69,14 @@ let regex pattern target pos =
   match find_first' pattern target' with
   | Some r -> (Some r, pos + (String.length r))
   | None -> (None, pos)
+
+let character chars target pos =
+  match sub target pos 1 with
+  | "" -> (None, pos)
+  | c ->
+    if String.contains chars (String.nget c 0)
+    then (Some c, pos + 1)
+    else (None, pos)
 
 let () =
   assert ((clamp 0 (0, 2)) = 0);
@@ -142,3 +150,9 @@ let () =
   assert ((num "2017" 0) = (Some "2017", 4));
   assert ((num "9am" 0) = (Some "9", 1));
   assert ((num "02" 0) = (None, 0));
+
+  let ops = character "+-*/" in
+  assert ((ops "+" 0) = (Some "+", 1));
+  assert ((ops "-" 0) = (Some "-", 1));
+  assert ((ops "%" 0) = (None, 0));
+  assert ((ops "" 0) = (None, 0));
