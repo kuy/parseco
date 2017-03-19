@@ -48,6 +48,11 @@ let seq parsers target pos =
     | None -> (Some (List.rev acc), pos')
   in aux [] 0 pos
 
+let option parser target pos =
+  match parser target pos with
+  | (Some r, pos') -> (Some r, pos')
+  | (None, pos') -> (Some "", pos')
+
 let () =
   assert ((clamp 0 (0, 2)) = 0);
   assert ((clamp 1 (0, 2)) = 1);
@@ -89,7 +94,25 @@ let () =
   assert ((many_of_foo_or_bar "foobarbarfoo" 0) = (Some ["foo"; "bar"; "bar"; "foo"], 12));
   assert ((many_of_foo_or_bar "" 0) = (Some [], 0));
 
+  let seq_test1 = seq [hoge; foo; bar] in
+  assert ((seq_test1 "hogefoobar" 0) = (Some ["hoge"; "foo"; "bar"], 10));
+  assert ((seq_test1 "hogefoo" 0) = (None, 0));
+
+  let seq_test2 = seq [] in
+  assert ((seq_test2 "hoge" 0) = (Some [], 0));
+
   let hoge_and_foo_or_bar = seq [hoge; foo_or_bar] in
   assert ((hoge_and_foo_or_bar "hogefoo" 0) = (Some ["hoge"; "foo"], 7));
   assert ((hoge_and_foo_or_bar "hogebar" 0) = (Some ["hoge"; "bar"], 7));
   assert ((hoge_and_foo_or_bar "hoge" 0) = (None, 0));
+
+  let option_hoge = option hoge in
+  assert ((option_hoge "hoge" 0) = (Some "hoge", 4));
+  assert ((option_hoge "fuga" 0) = (Some "", 0));
+
+  let mac = token "Mac" in
+  let variation = seq [option mac; token "Vim"] in
+  assert ((variation "MacVim" 0) = (Some ["Mac"; "Vim"], 6));
+  assert ((variation "Vim" 0) = (Some [""; "Vim"], 3));
+  assert ((variation "MacEmacs" 0) = (None, 0));
+  assert ((variation "Emacs" 0) = (None, 0));
